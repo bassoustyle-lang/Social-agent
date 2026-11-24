@@ -6,3 +6,5 @@ data/assets/
 *.mp4
 *.mp3
 *.png
+
+.vercel
