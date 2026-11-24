@@ -36,11 +36,11 @@ export class StateMachine {
       CaseState.EDIT,
       CaseState.PUBLISH,
       CaseState.ANALYZE,
-      CaseState.COMPLETE,
     ];
 
     for (const state of flow) {
       await this.transition(ticket, state);
+
       const handler = this.handlers.get(state);
       if (!handler) {
         logger.error(`No handler registered for state ${state}`);
@@ -66,6 +66,10 @@ export class StateMachine {
         Object.assign(ticket, result.data);
       }
     }
+
+    // Final transition to COMPLETE
+    await this.transition(ticket, CaseState.COMPLETE);
+    logger.info(`Pipeline reached COMPLETE for ${ticket.caseId}`);
 
     return ticket;
   }
