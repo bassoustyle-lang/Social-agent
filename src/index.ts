@@ -10,21 +10,22 @@ import { EditorAgent } from "./agents/editor";
 import { PublisherAgent } from "./agents/publisher";
 import { logger } from "./core/logger";
 
-async function main() {
-  logger.info("🚀 THE UNCLAIMED AI Agent System — Starting");
+export interface PipelineRequest {
+  caseId?: string;
+  title?: string;
+  theme?: string;
+}
 
-  // Initialize database
-  await initDatabase();
+export interface PipelineResponse {
+  success: boolean;
+  caseId?: string;
+  finalState?: string;
+  postId?: string;
+  reelUrl?: string;
+  error?: string;
+}
 
-  // Create case ticket
-  const ticket: CaseTicket = {
-    caseId: "CASE001",
-    title: "THE PHOTOGRAPH OF TOMORROW",
-    theme: "Photographic Evidence from the Future",
-    state: CaseState.INIT,
-  };
-
-  // Initialize state machine
+async function runPipeline(ticket: CaseTicket): Promise<CaseTicket> {
   const sm = new StateMachine();
   const director = new DirectorAgent();
   const researcher = new ResearcherAgent();
@@ -34,7 +35,6 @@ async function main() {
   const editor = new EditorAgent();
   const publisher = new PublisherAgent();
 
-  // Register handlers
   sm.registerHandler(CaseState.RESEARCH, async (t) => researcher.run(t));
   sm.registerHandler(CaseState.SCRIPT, async (t) => scriptwriter.run(t));
   sm.registerHandler(CaseState.VISUAL, async (t) => visualProducer.run(t));
@@ -50,6 +50,23 @@ async function main() {
   const result = await sm.run(ticket);
 
   logger.info("Pipeline complete", { caseId: result.caseId, finalState: result.state });
+  return result;
+}
+
+async function main() {
+  logger.info("🚀 THE UNCLAIMED AI Agent System — Starting");
+
+  await initDatabase();
+
+  const ticket: CaseTicket = {
+    caseId: "CASE001",
+    title: "THE PHOTOGRAPH OF TOMORROW",
+    theme: "Photographic Evidence from the Future",
+    state: CaseState.INIT,
+  };
+
+  const result = await runPipeline(ticket);
+
   console.log("\n✅ Pipeline finished. Final state:", result.state);
   console.log("Post ID:", result.postId || "N/A");
   console.log("Reel URL:", result.reelUrl || "N/A");
@@ -59,3 +76,5 @@ main().catch((err) => {
   logger.error("Fatal error", { error: err.message, stack: err.stack });
   process.exit(1);
 });
+
+export { runPipeline };
