@@ -1,0 +1,20 @@
+# Secrets — never upload to Vercel. Set these in Project Settings > Environment Variables.
+.env
+.env.*
+!.env.example
+
+# Local artifacts
+node_modules
+dist
+logs
+data
+output
+audio
+assets
+media
+
+# Dev files
+.git
+.gitignore
+*.log
+README.md
